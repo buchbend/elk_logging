@@ -30,5 +30,4 @@ volumes:
   elk_data:
 
 networks:
-  data-net:
   elk:
