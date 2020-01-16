@@ -12,7 +12,7 @@ You have to have docker and docker-compose installed to run the containers.
 There is a convenience ansible setup in this repository to install docker on 
 your machine: https://git.ph1.uni-koeln.de/docker/prepare_for_docker.git. 
 
-Please run:
+Please run either:
 
 ## https-clone
 ~~~
@@ -21,9 +21,10 @@ cd prepare_for_docker
 ./prepare_for_docker.sh
 ~~~
 
+or 
 ## git-clone
 ~~~
-git clone git@git.ph1.uni-koeln.de/docker/prepare_for_docker.git
+git clone git@git.ph1.uni-koeln.de:docker/prepare_for_docker.git
 cd prepare_for_docker
 ./prepare_for_docker.sh
 ~~~
