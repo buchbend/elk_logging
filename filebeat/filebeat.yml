@@ -1,0 +1,30 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition.contains:
+            docker.container.image: "karmada"
+          config:
+            - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              containers.ids:
+                - "${data.docker.container.id}"
+              multiline.pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{4} '
+              multiline.negate: true
+              multiline.match: after
+              encoding: utf-8
+              close_inactive: 5m
+              tags: ["karmada"]
+
+        - config:
+            - type: container
+              containers.ids:
+                - "*"
+              encoding: utf-8
+              close_inactive: 5m
+
+output.logstash:
+  enabled: true
+  hosts:
+    - "elk:5044"

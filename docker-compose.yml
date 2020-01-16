@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  elk:
+    image: sebp/elk
+    restart: always
+    ports:
+      - "5601:5601"
+    expose:
+      - "5601"
+      - "5044"
+    volumes:
+      - ./logstash/docker.conf:/etc/logstash/conf.d/02-beats-input.conf
+      - ./elk/elasticsearch.yml:/opt/elasticsearch/config/elasticsearch.yml
+      - elk_data:/var/lib/elasticsearch
+    networks:
+      - elk
+
+  filebeat:
+    build: ./filebeat
+    volumes:
+      - /var/lib/docker:/var/lib/docker
+      - /var/run/:/var/run/
+    networks:
+      - elk
+    depends_on:
+      - elk
+
+volumes:
+  elk_data:
+
+networks:
+  data-net:
+  elk:
