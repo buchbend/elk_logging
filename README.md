@@ -14,11 +14,20 @@ your machine: https://git.ph1.uni-koeln.de/docker/prepare_for_docker.git.
 
 Please run:
 
+## https-clone
 ~~~
 git clone https://git.ph1.uni-koeln.de/docker/prepare_for_docker.git
 cd prepare_for_docker
 ./prepare_for_docker.sh
 ~~~
+
+## git-clone
+~~~
+git clone git@git.ph1.uni-koeln.de/docker/prepare_for_docker.git
+cd prepare_for_docker
+./prepare_for_docker.sh
+~~~
+
 
 And enter your sudo password when asked for.
 
