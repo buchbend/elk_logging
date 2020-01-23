@@ -2,14 +2,17 @@ filebeat.autodiscover:
   providers:
     - type: docker
       templates:
-        - condition.contains:
-            docker.container.image: "karmada_web"
+        - condition.and:
+            - contains:
+                docker.container.name: "karmada"
+            - not.contains:
+                docker.container.name: "celery"
           config:
             - type: container
               paths:
                 - /var/lib/docker/containers/${data.docker.container.id}/*.log
               containers.ids:
-                - "${data.docker.container.id}"
+                - "*"
               multiline.pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{4} '
               multiline.negate: true
               multiline.match: after
@@ -17,15 +20,18 @@ filebeat.autodiscover:
               close_inactive: 5m
               tags: ["karmada"]
 
-        - condition.contains:
-            docker.container.image: "redis"
+        - condition.and:
+            - contains:
+                docker.container.name: "karmada"
+            - contains:
+                docker.container.name: "celery"
           config:
             - type: container
               paths:
                 - /var/lib/docker/containers/${data.docker.container.id}/*.log
               containers.ids:
-                - "${data.docker.container.id}"
-              multiline.pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{4} '
+                - "*"
+              multiline.pattern: '^[\[\s]*\d{4}-\d{2}-\d{2}'
               multiline.negate: true
               multiline.match: after
               encoding: utf-8
@@ -33,22 +39,28 @@ filebeat.autodiscover:
               tags: ["karmada"]
 
         - condition.contains:
-            docker.container.image: "karmada"
+            docker.container.name: "uwsgi"
           config:
             - type: container
               paths:
                 - /var/lib/docker/containers/${data.docker.container.id}/*.log
               containers.ids:
-                - "${data.docker.container.id}"
-              multiline.pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{4} '
+                - "*"
+              multiline.pattern: '\[pid:'
               multiline.negate: true
               multiline.match: after
               encoding: utf-8
               close_inactive: 5m
-              tags: ["karmada"]
+              tags: ["uwsgi"]
 
-        - config:
+
+        - condition.contains.not:
+            docker.container.name: "uwsgi"
+            docker.container.name: "karmada"
+          config:
             - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
               containers.ids:
                 - "*"
               encoding: utf-8
@@ -57,4 +69,4 @@ filebeat.autodiscover:
 output.logstash:
   enabled: true
   hosts:
-    - "elk:5044"
+    - "logstash:5044"

@@ -1,33 +1,67 @@
 version: '3'
 
 services:
-  elk:
-    image: sebp/elk
-    restart: always
-    ports:
-      - "5601:5601"
-    expose:
-      - "5601"
-      - "5044"
-    volumes:
-      - ./logstash/docker.conf:/etc/logstash/conf.d/02-beats-input.conf
-      - ./elk/elasticsearch.yml:/opt/elasticsearch/config/elasticsearch.yml
-      - elk_data:/var/lib/elasticsearch
-    networks:
-      - elk
 
   filebeat:
     build: ./filebeat
+    restart: always
+    container_name: filebeat
     volumes:
-      - /var/lib/docker:/var/lib/docker
-      - /var/run/:/var/run/
+      - /var/lib/docker/containers/:/var/lib/docker/containers/:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - logstash
     networks:
       - elk
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.5.1
+    restart: always
+    container_name: logstash
+    volumes:
+      - ./logstash/docker.conf:/usr/share/logstash/pipeline/logstash.conf
+    environment:
+      - "CONFIG_RELOAD_AUTOMATIC=true"
+    expose:
+      - "5044"
     depends_on:
+      - elasticsearch
+    networks:
       - elk
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    restart: always
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+    volumes:
+      - /usr/share/elasticsearch/data:/usr/share/elasticsearch/data
+      # - ./elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - elk
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.5.1
+    restart: always
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - VIRTUAL_HOST=kibana.batleth.ph1.uni-koeln.de
+      - VIRTUAL_PORT=5601
+    networks:
+      - elk
+      - proxy-tier
+    depends_on:
+      - elasticsearch
 
 volumes:
   elk_data:
 
 networks:
   elk:
+    driver: bridge
+  proxy-tier:
+    external:
+      name: docker_setup_proxy-tier
