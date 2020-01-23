@@ -24,6 +24,8 @@ services:
       - "CONFIG_RELOAD_AUTOMATIC=true"
     expose:
       - "5044"
+    ports:
+      - 5044:5044
     depends_on:
       - elasticsearch
     networks:
