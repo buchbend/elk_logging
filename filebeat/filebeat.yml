@@ -6,7 +6,9 @@ filebeat.autodiscover:
             - contains:
                 docker.container.name: "karmada"
             - not.contains:
-                docker.container.name: "celery"
+                docker.container.name: "db"
+            - not.contains:
+                docker.container.name: "uwsgi"
           config:
             - type: container
               paths:
@@ -22,24 +24,9 @@ filebeat.autodiscover:
 
         - condition.and:
             - contains:
-                docker.container.name: "karmada"
+                docker.container.name: "uwsgi"
             - contains:
-                docker.container.name: "celery"
-          config:
-            - type: container
-              paths:
-                - /var/lib/docker/containers/${data.docker.container.id}/*.log
-              containers.ids:
-                - "*"
-              multiline.pattern: '^[\[\s]*\d{4}-\d{2}-\d{2}'
-              multiline.negate: true
-              multiline.match: after
-              encoding: utf-8
-              close_inactive: 5m
-              tags: ["karmada"]
-
-        - condition.contains:
-            docker.container.name: "uwsgi"
+                docker.container.name: "karmada"
           config:
             - type: container
               paths:
@@ -53,9 +40,24 @@ filebeat.autodiscover:
               close_inactive: 5m
               tags: ["uwsgi"]
 
+        - condition.and:
+            - contains:
+                docker.container.name: "db"
+            - contains:
+                docker.container.name: "karmada"
+          config:
+            - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+            - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              containers.ids:
+                - "*"
+              encoding: utf-8
+              close_inactive: 5m
 
         - condition.contains.not:
-            docker.container.name: "uwsgi"
             docker.container.name: "karmada"
           config:
             - type: container
