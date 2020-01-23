@@ -57,8 +57,9 @@ filebeat.autodiscover:
               encoding: utf-8
               close_inactive: 5m
 
-        - condition.contains.not:
-            docker.container.name: "karmada"
+        - condition.and:
+            - not.contains:
+                docker.container.name: "karmada"
           config:
             - type: container
               paths:
